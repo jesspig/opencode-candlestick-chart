@@ -6,6 +6,7 @@ const VISIBLE_TICKS = 12
 
 export default function CandlestickChart() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null)
   const candles = useStore((s) => s.candles)
@@ -15,8 +16,6 @@ export default function CandlestickChart() {
   useEffect(() => {
     if (!containerRef.current) return
     const chart = createChart(containerRef.current, {
-      width: containerRef.current.clientWidth,
-      height: containerRef.current.clientHeight,
       layout: {
         background: { type: "solid", color: isDark ? "#0c0c1a" : "#f5f5ff" },
         textColor: isDark ? "#9898b0" : "#4a4a6a",
@@ -48,6 +47,7 @@ export default function CandlestickChart() {
       },
       handleScroll: false,
       handleScale: false,
+      autoSize: true,
     })
 
     const upColor = isDark ? "#4ade80" : "#16a34a"
@@ -68,14 +68,36 @@ export default function CandlestickChart() {
     chartRef.current = chart
     seriesRef.current = series
 
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect
-      chart.applyOptions({ width, height })
-    })
-    ro.observe(containerRef.current)
+    const tooltip = tooltipRef.current
+    if (tooltip) {
+      chart.subscribeCrosshairMove((param) => {
+        if (!param.time || !param.point) {
+          tooltip.style.display = "none"
+          return
+        }
+        const data = param.seriesData.get(series) as CandlestickData | undefined
+        if (!data) {
+          tooltip.style.display = "none"
+          return
+        }
+        const d = new Date((param.time as number) * 1000)
+        const time = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`
+        const net = data.close - data.open
+        const isUp = net >= 0
+        const color = isUp ? (isDark ? "#4ade80" : "#16a34a") : (isDark ? "#f87171" : "#dc2626")
+        tooltip.innerHTML = `
+          <div style="font-size:9px;font-family:JetBrains Mono,monospace;line-height:1.6;padding:4px 6px;border-radius:4px;background:${isDark ? "rgba(12,12,26,0.9)" : "rgba(245,245,255,0.9)"};color:${isDark ? "#e0e0f0" : "#3a3a5a"};border:1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}">
+            <div>${time}</div>
+            <div style="color:${color}">${net >= 0 ? `+${net}` : net}</div>
+          </div>
+        `
+        tooltip.style.display = "block"
+        tooltip.style.left = `${param.point.x + 12}px`
+        tooltip.style.top = `${param.point.y - 12}px`
+      })
+    }
 
     return () => {
-      ro.disconnect()
       chart.remove()
     }
   }, [])
@@ -125,9 +147,13 @@ export default function CandlestickChart() {
   }, [candles])
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-full"
-    />
+    <div className="relative w-full h-full">
+      <div ref={containerRef} className="w-full h-full" />
+      <div
+        ref={tooltipRef}
+        className="absolute pointer-events-none z-10"
+        style={{ display: "none" }}
+      />
+    </div>
   )
 }
