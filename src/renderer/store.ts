@@ -38,6 +38,7 @@ interface AppState {
   opencodeState: OpencodeState
 
   addCandle: (candle: CandleData, stats: { cumulativeLines: number; totalEvents: number; totalFiles: number }, recent: RecentEvent[]) => void
+  resetCandles: () => void
   setOpencodeStatus: (s: { connected: boolean; state: OpencodeState; sessionName?: string }) => void
   setTheme: (t: Theme) => void
   setPinned: (p: boolean) => void
@@ -63,6 +64,8 @@ export const useStore = create<AppState>((set) => ({
       totalFiles: stats.totalFiles,
       recentEvents: recent,
     })),
+
+  resetCandles: () => set({ candles: [], cumulativeLines: 0, totalEvents: 0, totalFiles: 0, recentEvents: [] }),
 
   setOpencodeStatus: (s) => set({ connected: s.connected, opencodeState: s.state, sessionName: s.sessionName ?? "" }),
 

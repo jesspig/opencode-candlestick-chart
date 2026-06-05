@@ -40,6 +40,13 @@ function sendOpencodeStatus() {
   sender.send("opencode:status", { connected, state: opencodeState, sessionName })
 }
 
+function sendReset() {
+  const sender = BrowserWindow.getAllWindows()[0]?.webContents
+  if (sender) {
+    sender.send("opencode:reset")
+  }
+}
+
 let lastKnownConnected = false
 
 function readAndBroadcast() {
@@ -83,7 +90,10 @@ function readAndBroadcast() {
           sendOpencodeStatus()
         } else if (evt.type === "session") {
           sessionName = evt.sessionID
+          events = []
+          cumulative = 0
           sendOpencodeStatus()
+          sendReset()
         }
       } catch { }
     }
@@ -95,19 +105,21 @@ export function startTailer() {
     fs.mkdirSync(path.dirname(EVENTS_FILE), { recursive: true })
   }
 
-  readAndBroadcast()
   filePos = fs.existsSync(EVENTS_FILE) ? fs.statSync(EVENTS_FILE).size : 0
+  readAndBroadcast()
   sendOpencodeStatus()
 
   setInterval(readAndBroadcast, POLL_INTERVAL)
 }
 
 function broadcast(evt: CandleEvent, open: number, close: number, index: number) {
+  const high = open + evt.linesAdded
+  const low = open - evt.linesDeleted
   const candle = {
     time: Math.floor(evt.time / 1000) as any,
     open,
-    high: Math.max(open, close),
-    low: Math.min(open, close),
+    high: Math.max(high, low),
+    low: Math.min(high, low),
     close,
     filePath: evt.filePath,
     tool: evt.tool,

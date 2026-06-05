@@ -20,4 +20,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("opencode:status", handler)
     return () => ipcRenderer.removeListener("opencode:status", handler)
   },
+  onReset: (cb: () => void) => {
+    const handler = () => cb()
+    ipcRenderer.on("opencode:reset", handler)
+    return () => ipcRenderer.removeListener("opencode:reset", handler)
+  },
 })

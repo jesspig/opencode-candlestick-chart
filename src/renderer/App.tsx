@@ -13,12 +13,14 @@ declare global {
       onCandle: (cb: (data: any) => void) => () => void
       onThemeChanged: (cb: (t: string) => void) => () => void
       onOpencodeStatus: (cb: (data: { connected: boolean; state: "idle" | "busy" | "waiting"; sessionName?: string }) => void) => () => void
+      onReset: (cb: () => void) => () => void
     }
   }
 }
 
 export default function App() {
   const addCandle = useStore((s) => s.addCandle)
+  const resetCandles = useStore((s) => s.resetCandles)
   const setTheme = useStore((s) => s.setTheme)
   const setOpencodeStatus = useStore((s) => s.setOpencodeStatus)
   const theme = useStore((s) => s.theme)
@@ -33,7 +35,10 @@ export default function App() {
     const unsub3 = window.electronAPI.onOpencodeStatus((s) => {
       setOpencodeStatus(s)
     })
-    return () => { unsub1(); unsub2(); unsub3() }
+    const unsub4 = window.electronAPI.onReset(() => {
+      resetCandles()
+    })
+    return () => { unsub1(); unsub2(); unsub3(); unsub4() }
   }, [])
 
   useEffect(() => {
