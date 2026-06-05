@@ -1,0 +1,9 @@
+{
+  "name": "opencode-monitor-plugin",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@opencode-ai/plugin": "latest",
+    "diff": "^7.0.0"
+  }
+}
