@@ -14,7 +14,8 @@
   "busy": "忙碌",
   "waiting": "等待",
   "noEvents": "暂无事件",
-  "installPlugin": "一键安装插件",
+  "installPlugin": "安装插件",
+  "reinstallPlugin": "重新安装",
   "installing": "安装中...",
   "installOk": "插件安装成功",
   "installFail": "安装失败"

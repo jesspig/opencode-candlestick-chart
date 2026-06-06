@@ -8,9 +8,6 @@ directories:
 extraResources:
   - from: plugin
     to: plugin
-    filter:
-      - "*.ts"
-      - "package.json"
 
 win:
   target:

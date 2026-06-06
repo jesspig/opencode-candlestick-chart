@@ -15,6 +15,7 @@
   "waiting": "Waiting",
   "noEvents": "No events yet",
   "installPlugin": "Install Plugin",
+  "reinstallPlugin": "Reinstall",
   "installing": "Installing...",
   "installOk": "Plugin installed",
   "installFail": "Install failed"

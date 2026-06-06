@@ -177,20 +177,50 @@ app.whenReady().then(() => {
     sendToSettingsWindow("settings:changed", { colorScheme: settingsState.colorScheme })
   })
 
-  // --- Plugin install ---
+  // --- Plugin auto-install (silent on first launch) ---
+
+  function copyDirSync(src: string, dest: string) {
+    fs.mkdirSync(dest, { recursive: true })
+    for (const entry of fs.readdirSync(src)) {
+      const srcPath = path.join(src, entry)
+      const destPath = path.join(dest, entry)
+      if (fs.statSync(srcPath).isDirectory()) {
+        copyDirSync(srcPath, destPath)
+      } else {
+        fs.copyFileSync(srcPath, destPath)
+      }
+    }
+  }
+
+  async function autoInstallPlugin() {
+    const pluginDir = path.join(os.homedir(), ".config", "opencode", "plugin")
+    const src = pluginSourceDir()
+    try {
+      if (fs.existsSync(path.join(pluginDir, "node_modules"))) {
+        return { success: true, skipped: true }
+      }
+      copyDirSync(src, pluginDir)
+      execSync(`npm install --no-audit --no-fund`, { cwd: pluginDir, stdio: "pipe", timeout: 60000 })
+      return { success: true, skipped: false }
+    } catch (e: any) {
+      console.error("[plugin] auto-install failed:", e.message)
+      return { success: false, error: e.message }
+    }
+  }
+
+  autoInstallPlugin()
+
+  // --- Plugin install / reinstall ---
 
   ipcMain.handle("plugin:install", async () => {
     const pluginDir = path.join(os.homedir(), ".config", "opencode", "plugin")
     try {
-      fs.mkdirSync(pluginDir, { recursive: true })
       const src = pluginSourceDir()
-      for (const file of ["monitor.ts", "package.json"]) {
-        const srcFile = path.join(src, file)
-        if (fs.existsSync(srcFile)) {
-          fs.copyFileSync(srcFile, path.join(pluginDir, file))
-        }
+      if (fs.existsSync(pluginDir)) {
+        fs.rmSync(pluginDir, { recursive: true, force: true })
       }
-      execSync(`npm install`, { cwd: pluginDir, stdio: "pipe" })
+      copyDirSync(src, pluginDir)
+      execSync(`npm install --no-audit --no-fund`, { cwd: pluginDir, stdio: "pipe", timeout: 60000 })
       return { success: true }
     } catch (e: any) {
       return { success: false, error: e.message ?? String(e) }
