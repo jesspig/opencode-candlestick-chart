@@ -1,9 +1,10 @@
 import { useStore, type OpencodeState } from "../store"
+import { t } from "../locale"
 
-const LIGHTS: { key: OpencodeState; color: string; dimColor: string; label: string }[] = [
-  { key: "idle", color: "var(--tl-green)", dimColor: "var(--tl-green-dim)", label: "Idle" },
-  { key: "busy", color: "var(--tl-yellow)", dimColor: "var(--tl-yellow-dim)", label: "Busy" },
-  { key: "waiting", color: "var(--tl-red)", dimColor: "var(--tl-red-dim)", label: "Waiting" },
+const LIGHTS: { key: OpencodeState; color: string; dimColor: string; labelKey: string }[] = [
+  { key: "idle", color: "var(--tl-green)", dimColor: "var(--tl-green-dim)", labelKey: "idle" },
+  { key: "busy", color: "var(--tl-yellow)", dimColor: "var(--tl-yellow-dim)", labelKey: "busy" },
+  { key: "waiting", color: "var(--tl-red)", dimColor: "var(--tl-red-dim)", labelKey: "waiting" },
 ]
 
 function lightClass(state: OpencodeState, key: OpencodeState) {
@@ -14,13 +15,31 @@ function lightClass(state: OpencodeState, key: OpencodeState) {
 
 export default function StatusPanel() {
   const cumulativeLines = useStore((s) => s.cumulativeLines)
-  const totalEvents = useStore((s) => s.totalEvents)
-  const totalFiles = useStore((s) => s.totalFiles)
-  const recentEvents = useStore((s) => s.recentEvents)
+  const candles = useStore((s) => s.candles)
   const opencodeState = useStore((s) => s.opencodeState)
   const theme = useStore((s) => s.theme)
+  const colorScheme = useStore((s) => s.colorScheme)
+  const locale = useStore((s) => s.locale)
 
   const dark = theme === "dark"
+
+  function upColor() {
+    if (colorScheme === "redUp") return "var(--red)"
+    return "var(--green)"
+  }
+  function downColor() {
+    if (colorScheme === "redUp") return "var(--green)"
+    return "var(--red)"
+  }
+
+  const lastClose = candles.length > 0 ? candles[candles.length - 1].close : 0
+  const prevClose = candles.length > 1 ? candles[candles.length - 2].close : lastClose
+  const change = lastClose - prevClose
+  const changePct = prevClose !== 0 ? (change / prevClose) * 100 : 0
+  const isUp = change >= 0
+  const changeColor = isUp ? upColor() : downColor()
+
+  const history = candles.slice(-6).reverse()
 
   return (
     <div
@@ -32,66 +51,44 @@ export default function StatusPanel() {
       }}
     >
       <div className="text-[9px] font-semibold tracking-wider uppercase" style={{ color: "var(--text-dim)", marginBottom: 6 }}>
-        NET CHANGE
+        {t(locale, "close")}
       </div>
       <div
         className="font-mono text-lg font-bold leading-none tabular-nums"
-        style={{ color: cumulativeLines >= 0 ? "var(--green)" : "var(--red)", marginBottom: 10 }}
+        style={{ color: changeColor, marginBottom: 2 }}
       >
-        {cumulativeLines >= 0 ? `+${cumulativeLines}` : cumulativeLines}
+        {cumulativeLines}
       </div>
-
-      <div className="flex gap-3 mb-2">
-        <div className="flex-1">
-          <div className="text-[9px] font-semibold tracking-wider uppercase" style={{ color: "var(--text-dim)" }}>
-            EVENTS
-          </div>
-          <div className="font-mono text-sm font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
-            {totalEvents}
-          </div>
-        </div>
-        <div className="flex-1">
-          <div className="text-[9px] font-semibold tracking-wider uppercase" style={{ color: "var(--text-dim)" }}>
-            FILES
-          </div>
-          <div className="font-mono text-sm font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
-            {totalFiles}
-          </div>
-        </div>
+      <div
+        className="font-mono text-[10px] tabular-nums"
+        style={{ color: changeColor, marginBottom: 6 }}
+      >
+        {isUp ? "+" : ""}{change} ({isUp ? "+" : ""}{changePct.toFixed(2)}%)
       </div>
 
       <div className="text-[9px] font-semibold tracking-wider uppercase" style={{ color: "var(--text-dim)", marginBottom: 4 }}>
-        RECENT
+        {t(locale, "history")}
       </div>
 
       <div className="flex-1 flex flex-col gap-0.5 min-h-0 overflow-y-auto">
-        {recentEvents.length === 0 ? (
-          <div className="text-[9px]" style={{ color: "var(--text-dim)" }}>
-            No events yet
-          </div>
-        ) : (
-          [...recentEvents].reverse().map((e, i) => {
-            const t = new Date(e.timestamp)
-            const time = `${t.getHours().toString().padStart(2, "0")}:${t.getMinutes().toString().padStart(2, "0")}`
-            const file = e.filePath.split(/[/\\]/).pop() || e.filePath
-            return (
-              <div key={i} className="flex items-center gap-1 text-[9px] leading-tight">
-                <span className="font-mono shrink-0" style={{ color: "var(--text-dim)", width: 32 }}>
-                  {time}
-                </span>
-                <span className="truncate min-w-0" style={{ color: "var(--text-primary)" }}>
-                  {file}
-                </span>
-                <span
-                  className="font-mono tabular-nums shrink-0 ml-auto"
-                  style={{ color: e.netChange >= 0 ? "var(--green)" : "var(--red)" }}
-                >
-                  {e.netChange >= 0 ? `+${e.netChange}` : e.netChange}
-                </span>
-              </div>
-            )
-          })
-        )}
+        {history.map((c, i) => {
+          const idx = candles.length - 1 - i
+          const prevIdx = idx - 1
+          const pClose = prevIdx >= 0 ? candles[prevIdx].close : c.close
+          const chg = c.close - pClose
+          const pct = pClose !== 0 ? (chg / pClose) * 100 : 0
+          const col = chg >= 0 ? upColor() : downColor()
+          return (
+            <div key={c.time} className="flex items-center gap-1 text-[9px] leading-tight">
+              <span className="font-mono shrink-0 tabular-nums" style={{ color: "var(--text-primary)", width: 40 }}>
+                {c.close}
+              </span>
+              <span className="font-mono tabular-nums shrink-0 ml-auto" style={{ color: col }}>
+                {chg >= 0 ? "+" : ""}{chg} ({pct >= 0 ? "+" : ""}{pct.toFixed(1)}%)
+              </span>
+            </div>
+          )
+        })}
       </div>
 
       <div
@@ -127,7 +124,7 @@ export default function StatusPanel() {
           })}
         </div>
         <span className="text-[8px] tracking-wider uppercase font-semibold" style={{ color: "var(--text-dim)" }}>
-          {LIGHTS.find((l) => l.key === opencodeState)?.label}
+          {t(locale, LIGHTS.find((l) => l.key === opencodeState)?.labelKey ?? "")}
         </span>
       </div>
     </div>

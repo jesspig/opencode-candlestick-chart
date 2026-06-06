@@ -1,19 +1,12 @@
 import { useStore } from "../store"
+import { t } from "../locale"
 
 export default function TitleBar() {
-  const theme = useStore((s) => s.theme)
   const pinned = useStore((s) => s.pinned)
-  const cumulativeLines = useStore((s) => s.cumulativeLines)
   const sessionName = useStore((s) => s.sessionName)
   const connected = useStore((s) => s.connected)
-  const setTheme = useStore((s) => s.setTheme)
+  const locale = useStore((s) => s.locale)
   const setPinned = useStore((s) => s.setPinned)
-
-  const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark"
-    setTheme(next)
-    window.electronAPI.setTheme(next)
-  }
 
   const togglePin = () => {
     const next = !pinned
@@ -37,24 +30,11 @@ export default function TitleBar() {
           }}
         />
         <span className="text-xs font-semibold tracking-wide truncate max-w-[160px]" style={{ color: "var(--text-primary)" }}>
-          {sessionName ? sessionName.substring(0, 12) : "CODE DIFF"}
+          {sessionName ? sessionName.substring(0, 12) : t(locale, "title")}
         </span>
       </div>
 
       <div className="flex items-center gap-1" style={{ WebkitAppRegion: "no-drag" } as any}>
-        <span className="text-[10px] font-mono tabular-nums" style={{ color: connected ? "var(--green)" : "var(--text-dim)" }}>
-          {cumulativeLines >= 0 ? `+${cumulativeLines}` : cumulativeLines}
-        </span>
-
-        <button
-          onClick={toggleTheme}
-          className="flex items-center justify-center rounded hover:bg-white/10 transition-colors"
-          style={{ width: 24, height: 24, fontSize: 13 }}
-          title={`Theme: ${theme}`}
-        >
-          {theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"}
-        </button>
-
         <button
           onClick={togglePin}
           className="flex items-center justify-center rounded hover:bg-white/10 transition-colors text-xs"
@@ -62,6 +42,15 @@ export default function TitleBar() {
           title={pinned ? "Unpin" : "Pin"}
         >
           📌
+        </button>
+
+        <button
+          onClick={() => window.electronAPI.openSettings()}
+          className="flex items-center justify-center rounded hover:bg-white/10 transition-colors"
+          style={{ width: 24, height: 24, fontSize: 13, color: "var(--text-secondary)" }}
+          title={t(locale, "settings")}
+        >
+          ⚙
         </button>
 
         <button

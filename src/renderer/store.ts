@@ -1,6 +1,8 @@
 import { create } from "zustand"
+import type { Locale } from "./locale"
 
 export type Theme = "light" | "dark"
+export type ColorScheme = "redUp" | "greenUp"
 
 export interface CandleData {
   time: number
@@ -33,6 +35,8 @@ interface AppState {
   totalFiles: number
   recentEvents: RecentEvent[]
   theme: Theme
+  colorScheme: ColorScheme
+  locale: Locale
   pinned: boolean
   connected: boolean
   opencodeState: OpencodeState
@@ -41,6 +45,8 @@ interface AppState {
   resetCandles: () => void
   setOpencodeStatus: (s: { connected: boolean; state: OpencodeState; sessionName?: string }) => void
   setTheme: (t: Theme) => void
+  toggleColorScheme: () => void
+  setLocale: (l: Locale) => void
   setPinned: (p: boolean) => void
 }
 
@@ -52,6 +58,8 @@ export const useStore = create<AppState>((set) => ({
   totalFiles: 0,
   recentEvents: [],
   theme: "dark",
+  colorScheme: "redUp",
+  locale: "zh",
   pinned: true,
   connected: false,
   opencodeState: "idle",
@@ -70,5 +78,7 @@ export const useStore = create<AppState>((set) => ({
   setOpencodeStatus: (s) => set({ connected: s.connected, opencodeState: s.state, sessionName: s.sessionName ?? "" }),
 
   setTheme: (t) => set({ theme: t }),
+  toggleColorScheme: () => set((s) => ({ colorScheme: s.colorScheme === "redUp" ? "greenUp" : "redUp" })),
+  setLocale: (l) => set({ locale: l }),
   setPinned: (p) => set({ pinned: p }),
 }))

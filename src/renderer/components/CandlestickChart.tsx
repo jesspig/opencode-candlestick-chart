@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { createChart, CandlestickSeries, type IChartApi, type ISeriesApi, type CandlestickData } from "lightweight-charts"
 import { useStore } from "../store"
 
-const VISIBLE_TICKS = 12
+const VISIBLE_TICKS = 20
 
 export default function CandlestickChart() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -11,11 +11,22 @@ export default function CandlestickChart() {
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null)
   const candles = useStore((s) => s.candles)
   const theme = useStore((s) => s.theme)
+  const colorScheme = useStore((s) => s.colorScheme)
   const isDark = theme === "dark"
+
+  function upColor() {
+    if (colorScheme === "redUp") return isDark ? "#f87171" : "#dc2626"
+    return isDark ? "#4ade80" : "#16a34a"
+  }
+  function downColor() {
+    if (colorScheme === "redUp") return isDark ? "#4ade80" : "#16a34a"
+    return isDark ? "#f87171" : "#dc2626"
+  }
 
   useEffect(() => {
     if (!containerRef.current) return
     const chart = createChart(containerRef.current, {
+      autoSize: true,
       layout: {
         background: { type: "solid", color: isDark ? "#0c0c1a" : "#f5f5ff" },
         textColor: isDark ? "#9898b0" : "#4a4a6a",
@@ -44,24 +55,24 @@ export default function CandlestickChart() {
       rightPriceScale: {
         borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
         scaleMargins: { top: 0.1, bottom: 0.1 },
+        width: 56,
       },
       handleScroll: false,
       handleScale: false,
-      autoSize: true,
     })
 
-    const upColor = isDark ? "#4ade80" : "#16a34a"
-    const downColor = isDark ? "#f87171" : "#dc2626"
+    const uc = upColor()
+    const dc = downColor()
     const series = chart.addSeries(CandlestickSeries, {
-      upColor,
-      downColor,
-      borderUpColor: upColor,
-      borderDownColor: downColor,
-      wickUpColor: upColor,
-      wickDownColor: downColor,
+      upColor: uc,
+      downColor: dc,
+      borderUpColor: uc,
+      borderDownColor: dc,
+      wickUpColor: uc,
+      wickDownColor: dc,
       priceFormat: {
         type: "custom",
-        formatter: (price: number) => `${price >= 0 ? "+" : ""}${price}`,
+        formatter: (price: number) => `${price}`,
       },
     })
 
@@ -82,13 +93,16 @@ export default function CandlestickChart() {
         }
         const d = new Date((param.time as number) * 1000)
         const time = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`
-        const net = data.close - data.open
-        const isUp = net >= 0
-        const color = isUp ? (isDark ? "#4ade80" : "#16a34a") : (isDark ? "#f87171" : "#dc2626")
+        const idx = candles.findIndex((c) => c.time === (param.time as number) * 1000)
+        const prevClose = idx > 0 ? candles[idx - 1].close : data.open
+        const change = data.close - prevClose
+        const changePct = prevClose !== 0 ? ((change / prevClose) * 100) : 0
+        const isUp = change >= 0
+        const color = isUp ? upColor() : downColor()
         tooltip.innerHTML = `
           <div style="font-size:9px;font-family:JetBrains Mono,monospace;line-height:1.6;padding:4px 6px;border-radius:4px;background:${isDark ? "rgba(12,12,26,0.9)" : "rgba(245,245,255,0.9)"};color:${isDark ? "#e0e0f0" : "#3a3a5a"};border:1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}">
             <div>${time}</div>
-            <div style="color:${color}">${net >= 0 ? `+${net}` : net}</div>
+            <div style="color:${color}">${data.close}  ${isUp ? "+" : ""}${change} (${changePct >= 0 ? "+" : ""}${changePct.toFixed(2)}%)</div>
           </div>
         `
         tooltip.style.display = "block"
@@ -114,17 +128,17 @@ export default function CandlestickChart() {
         horzLines: { color: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)" },
       },
     })
-    const upColor = isDark ? "#4ade80" : "#16a34a"
-    const downColor = isDark ? "#f87171" : "#dc2626"
+    const uc = upColor()
+    const dc = downColor()
     seriesRef.current?.applyOptions({
-      upColor,
-      downColor,
-      borderUpColor: upColor,
-      borderDownColor: downColor,
-      wickUpColor: upColor,
-      wickDownColor: downColor,
+      upColor: uc,
+      downColor: dc,
+      borderUpColor: uc,
+      borderDownColor: dc,
+      wickUpColor: uc,
+      wickDownColor: dc,
     })
-  }, [isDark])
+  }, [isDark, colorScheme])
 
   useEffect(() => {
     if (!seriesRef.current || candles.length === 0) return
@@ -136,14 +150,7 @@ export default function CandlestickChart() {
       close: c.close,
     }))
     seriesRef.current.setData(data)
-    const chart = chartRef.current
-    if (chart) {
-      const range = Math.max(candles.length, VISIBLE_TICKS)
-      chart.timeScale().setVisibleLogicalRange({
-        from: range - VISIBLE_TICKS,
-        to: range,
-      })
-    }
+    chartRef.current?.timeScale().fitContent()
   }, [candles])
 
   return (
