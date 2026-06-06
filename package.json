@@ -2,15 +2,17 @@
   "name": "opencode-candlestick-chart",
   "version": "0.1.0",
   "private": true,
+  "description": "Electron desktop widget that monitors opencode file edits and renders them as a real-time candlestick chart.",
+  "author": "JessPig",
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "postinstall": "electron-builder install-app-deps",
-    "package:win": "electron-vite build && electron-builder --win portable",
-    "package:mac": "electron-vite build && electron-builder --mac dmg",
-    "package:linux": "electron-vite build && electron-builder --linux AppImage"
+    "package:win": "electron-vite build && electron-builder --win portable --publish never",
+    "package:mac": "electron-vite build && electron-builder --mac dmg --publish never",
+    "package:linux": "electron-vite build && electron-builder --linux AppImage --publish never"
   },
   "dependencies": {
     "chokidar": "^5.0.0",
