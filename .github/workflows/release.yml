@@ -57,9 +57,17 @@ jobs:
           merge-multiple: true
           path: dist
 
+      - name: List files for debugging
+        run: ls -la dist/
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
