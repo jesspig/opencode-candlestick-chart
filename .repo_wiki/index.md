@@ -1,4 +1,4 @@
-# opencode-candlestick-chart
+# OpenCode Candlestick Chart
 
 Electron desktop widget that monitors opencode file edits and renders them as a real-time candlestick chart.
 

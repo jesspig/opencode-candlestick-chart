@@ -27,7 +27,7 @@ There are no lint, typecheck, or test commands.
 `electron-builder.yml` — Packages as a portable `.exe` (no installer).
 
 ```yaml
-appId: ai.opencode.monitor
+appId: com.opencode.candlestickchart
 win:
   target: portable
   artifactName: ${name}-${version}-portable.${ext}

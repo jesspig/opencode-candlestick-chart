@@ -1,5 +1,5 @@
 {
-  "name": "opencode-monitor-plugin",
+  "name": "opencode-candlestick-chart-plugin",
   "private": true,
   "type": "module",
   "dependencies": {
