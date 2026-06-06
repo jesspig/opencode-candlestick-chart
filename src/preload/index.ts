@@ -25,4 +25,26 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("opencode:reset", handler)
     return () => ipcRenderer.removeListener("opencode:reset", handler)
   },
+  onSettingsChanged: (cb: (data: { theme?: string; locale?: string; colorScheme?: string }) => void) => {
+    const handler = (_: any, data: any) => cb(data)
+    ipcRenderer.on("settings:changed", handler)
+    return () => ipcRenderer.removeListener("settings:changed", handler)
+  },
+
+  installPlugin: () => ipcRenderer.invoke("plugin:install"),
+  openSettings: () => ipcRenderer.send("window:open-settings"),
+})
+
+contextBridge.exposeInMainWorld("settingsAPI", {
+  getSettings: () => ipcRenderer.invoke("settings:get"),
+  setTheme: (t: "light" | "dark") => ipcRenderer.send("settings:set-theme", t),
+  setLocale: (l: "zh" | "en") => ipcRenderer.send("settings:set-locale", l),
+  toggleColorScheme: () => ipcRenderer.send("settings:toggle-color-scheme"),
+  installPlugin: () => ipcRenderer.invoke("plugin:install"),
+  onSettingsChanged: (cb: (data: any) => void) => {
+    const handler = (_: any, data: any) => cb(data)
+    ipcRenderer.on("settings:changed", handler)
+    return () => ipcRenderer.removeListener("settings:changed", handler)
+  },
+  close: () => ipcRenderer.send("settings:close"),
 })

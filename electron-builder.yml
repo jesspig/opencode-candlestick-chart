@@ -5,6 +5,13 @@ copyright: Copyright © 2026
 directories:
   output: dist
 
+extraResources:
+  - from: plugin
+    to: plugin
+    filter:
+      - "*.ts"
+      - "package.json"
+
 win:
   target:
     - target: portable
