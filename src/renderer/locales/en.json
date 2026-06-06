@@ -1,0 +1,22 @@
+{
+  "title": "CODE DIFF",
+  "close": "CLOSE",
+  "history": "HISTORY",
+  "settings": "Settings",
+  "theme": "Theme",
+  "dark": "Dark",
+  "light": "Light",
+  "colorScheme": "Color Scheme",
+  "redUp": "Red Up",
+  "greenUp": "Green Up",
+  "language": "Language",
+  "idle": "Idle",
+  "busy": "Busy",
+  "waiting": "Waiting",
+  "noEvents": "No events yet",
+  "installPlugin": "Install Plugin",
+  "reinstallPlugin": "Reinstall",
+  "installing": "Installing...",
+  "installOk": "Plugin installed",
+  "installFail": "Install failed"
+}

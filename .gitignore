@@ -1,0 +1,21 @@
+node_modules/
+out/
+dist/
+release/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+
+# Build artifacts
+*.tsbuildinfo

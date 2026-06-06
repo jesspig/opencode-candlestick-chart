@@ -1,0 +1,22 @@
+{
+  "title": "代码差异",
+  "close": "收盘",
+  "history": "历史",
+  "settings": "设置",
+  "theme": "主题",
+  "dark": "深色",
+  "light": "浅色",
+  "colorScheme": "涨跌颜色",
+  "redUp": "红涨绿跌",
+  "greenUp": "绿涨红跌",
+  "language": "语言",
+  "idle": "空闲",
+  "busy": "忙碌",
+  "waiting": "等待",
+  "noEvents": "暂无事件",
+  "installPlugin": "安装插件",
+  "reinstallPlugin": "重新安装",
+  "installing": "安装中...",
+  "installOk": "插件安装成功",
+  "installFail": "安装失败"
+}
