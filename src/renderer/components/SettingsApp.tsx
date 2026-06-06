@@ -74,6 +74,16 @@ function DownloadIcon() {
   )
 }
 
+function RefreshIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+  )
+}
+
 function CheckIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -304,7 +314,7 @@ export default function SettingsApp() {
           />
         </SectionCard>
 
-        {/* Plugin Install */}
+        {/* Plugin */}
         <SectionCard>
           <SectionLabel icon={<DownloadIcon />} label="Plugin" />
           <button
@@ -316,8 +326,10 @@ export default function SettingsApp() {
               background:
                 installState === "ok" ? "var(--green)" :
                 installState === "fail" ? "var(--red)" :
-                "var(--accent)",
-              color: "#fff",
+                installState === "installing" ? "var(--accent)" :
+                "transparent",
+              color: installState === "idle" ? "var(--text-secondary)" : "#fff",
+              border: installState === "idle" ? "1px solid var(--glass-border)" : "none",
               opacity: installState === "installing" ? 0.65 : 1,
             }}
           >
@@ -341,8 +353,8 @@ export default function SettingsApp() {
               </>
             ) : (
               <>
-                <DownloadIcon />
-                {t(locale, "installPlugin")}
+                <RefreshIcon />
+                {t(locale, "reinstallPlugin")}
               </>
             )}
           </button>
